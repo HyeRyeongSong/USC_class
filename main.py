@@ -1,56 +1,69 @@
-## Sentence Preprocessing
-
-# split our Tweet text into words
-# use the NLTK(Natural Language Toolkit) library to split our text into words
-# use the ‘word_tokenize()’ function provided by the nltk library
-
+import csv
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 
-# Splitting a sentence into words
-# We will have to preprocess our text before we count the words.
-example_sentence = "This is a simple sentence."
+from collections import OrderedDict
+import operator
 
-word_tokens = word_tokenize(example_sentence)
+# Preprocessing Combined
+# Combine all 3 preprocessing steps and tokenizing steps
+# Word Count Pre-processing
 
-for w in word_tokens:
-    print(w)
+# make a dictionary called 'final_dictionary'
+# A Python dictionary contains key:value pairs
+# We will use this dictionary so that the actual word is the key and the count of the word is the value
+final_dictionary = {}
 
-# Preprocessing 1: Changing the case of charachters into a lower case
-# “Happy” and “happy” will be counted as different words when they are the same words.
-# We will have to change our text to lowercase because the Python script is case sensitive.
-example_sentence = "This is a simple sentence."
-final_sentence = example_sentence.lower()
+with open('Data.csv', mode='r', encoding='UTF-8') as my_file:
+    csv_reader = csv.reader(my_file, delimiter=',')
+    line_count = 0
 
-print(final_sentence)
+    for row in csv_reader:
 
-# Preprocessing 2: removing punctuations from a senetence
-# remove punctuation from the sentence
-# We have to ‘from nltk.tokenize import RegexpTokenizer’
-# The ‘RegexpTokenizer()’ function removes the punctutation
-example_sentence = "It's a simple sentence."
+        if line_count == 1:
+            line_count = line_count + 1
+        else:
+            line_count = line_count + 1
+            txt = row[1]
 
-tokenizer = RegexpTokenizer('r\W+|\w+')
-word_tokens = tokenizer.tokenize(example_sentence)
+            # 1. set the text to lowercase
+            final_txt = txt.lower()
+            stop_words = set(stopwords.words('English'))
+            # 2. tokenize the word removing punctuations
+            tokenizer = RegexpTokenizer('r\W+|\w+')
+            word_tokens = tokenizer.tokenize(final_txt)
+            # 3. filter the stop words in our tokens
+            filtered_sentence = [w for w in word_tokens if not w in stop_words]
 
-for w in word_tokens:
-    print(w)
+            # Then we will have our final list words that do not have punctuations or stop words
+            # check whether a specific word is already in our dictionary or not
+            # If it is in our dictionary we increment the count otherwise we add it to our dictionary giving it a count of 1
+            # Now our dictionary has words and the count
+            for w in filtered_sentence:
+                if w not in final_dictionary:
+                    final_dictionary[w] = 1
+                else:
+                    final_dictionary[w] = final_dictionary[w] + 1
 
-# Preprocessing 3: removing stopwords from a senetence
-# remove stop words from our text
-# Stop words usually refers to the most common words in a language that have no significant meaning
-# We have to ‘from nltk.corpus import stopwords’
+# Since we want the most frequent words, we sort the dictionary with ‘reverse=True’ so that our dictionary is sorted in descending order
+sorted_d = sorted(final_dictionary.items(), key=operator.itemgetter(1), reverse=True)
+# ‘sorted_d’ will now be a collection of tuples.
+# Each tuple will have word for the first value and count for the second value.
+print(sorted_d)
 
-example_sentence = "It's a simple sentence."
+# Saving Word Count to a CSV File
+# write our word count results to a csv file.
+with open('wordCount.csv', mode='w', newline = '', encoding='UTF-8') as my_file:
+    my_writer = csv.writer(my_file, delimiter=',')
 
-stop_words = set(stopwords.words('English'))
-tokenizer = RegexpTokenizer('r\W+|\w+')
-word_tokens = tokenizer.tokenize(example_sentence)
-# checks if any tokens are stop words and filters them
-filtered_sentence = [w for w in word_tokens if not w in stop_words]
+    # write ‘Word’ and ‘Count’ as headers
+    my_writer.writerow(['Word', 'Count'])
 
+    # iterate over our collection of tuples and write each tuple in each row
+    for key in sorted_d:
+        current_Word = str(key[0])
+        current_Count = int(key[1])
 
-for w in filtered_sentence:
-    print(w)
+        my_writer.writerow([current_Word, current_Count])
