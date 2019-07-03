@@ -1,10 +1,23 @@
+import csv
 import matplotlib.pyplot as plt
 
-x_array = ['USC', 'UCLA', 'UCI', 'Caltech', 'Stanford', 'UCSD']
-y_array = [17, 18, 41, 8, 5, 36]
+final_dictionary = {}
 
-plt.bar(x_array, y_array, align='center', alpha=0.5)
-plt.ylabel('Acceptance Rate')
-plt.xlabel('University')
+with open('wordCount.csv', mode='r', encoding='UTF-8') as my_file:
+    csv_reader = csv.reader(my_file, delimiter=',')
+    line_count = 0
 
-plt.show()
+    for row in csv_reader:
+        line_count = line_count + 1
+
+        if line_count == 1:
+            continue;
+
+        word = str(row[0])
+        count = int(row[1])
+
+        final_dictionary[word] = count
+        print(word + "\t" + str(count))
+
+        if line_count == 21:
+            break;
